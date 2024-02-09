@@ -1,0 +1,114 @@
+#--------task4---------------
+
+comands = {'hello':'hello (cmd)', 
+           'add':'new contact (cmd username phone)', 
+           'change':'change contact (cmd username phone)', 
+           'show':'show contacts (cmd username) ', 
+           'all':'show all contacts (cmd)', 
+           'close': 'close (cmd)', 
+           'exit':'exit (cmd)'}
+
+
+contacts_path = r"source/contacts.txt"
+contacts_dict = {}
+
+def question(ask="Enter command: ", accept_empty_value=True):
+    while True:
+        answer=input(ask)
+        if answer or accept_empty_value:
+            break
+    return answer
+
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
+
+def add_contact(contact_name:str, contact_phone:str) -> bool:
+    if contact_name in contacts_dict:
+        return False
+    else:
+        contact_name=contact_name.strip().title()
+        contact_phone = contact_phone.strip()
+        contacts_dict[contact_name]=contact_phone
+        try:
+            with open(contacts_path,"w+") as contacts_file:
+                contacts_file.writelines(k+" "+ v +"\n" for k,v in contacts_dict.items())
+        except Exception as e:
+            print(e)
+        return True
+
+def change_contact(contact_name:str, contact_phone:str):
+    if contact_name in contacts_dict:
+        contacts_dict[contact_name]=contact_phone.strip()
+        return True
+    else:
+        return False
+
+def show_phone(contact_name:str):
+    if contact_name in contacts_dict:
+        print(f"{contact_name} {"-"*(50-len(contact_name))}tel: {contacts_dict[contact_name]}")
+        return True
+    else:
+        print("Record is absent!")
+        return False
+
+def show_all():
+    for name, phone in contacts_dict.items():
+        print(f"{name}{"-"*(50-len(name))}tel: {phone}")
+
+def main():
+    print("\nWelcome to the assistant bot!\n\n        COMMANDS:")
+    for command in comands:
+        print(f"{command} {"-"*(20-len(command))}{comands[command]}")
+    activ=True
+    try:
+        with open(contacts_path,"r+") as contacts_file:
+            for contact in contacts_file.readlines():
+                contact=contact.split()
+                contacts_dict[contact[0]]=contact[1]
+    except Exception as e:
+        print(e)
+        try:
+            with open(contacts_path,"w+") as contacts_file:
+                pass
+        except Exception as e:
+            print(e)
+            activ = False
+    if activ:
+        command = question(accept_empty_value=False).strip().lower()
+
+    while activ:
+        user_input = input("\nEnter a command: ")
+        command, *args = parse_input(user_input)
+
+        match command:
+            case "hello":
+                print("\nHow can I help you?\n")
+            case "add":
+                if (len(args)==2 and 
+                    add_contact(contact_name=args[0],
+                    contact_phone=args[1])) or add_contact(contact_name=question(ask="Enter Name: ",accept_empty_value=False),
+                                                            contact_phone=question(ask="Enter Phone: ")):
+                    print(f'Contact added: (Name: {args[0]}-----tel: {args[1]})')
+                else: print(f"Contact do not added!")
+            case "change":
+                if len(args)==2 and change_contact(contact_name=args[0],contact_phone=args[1]):
+                    print(f'Phone changed: {args[0]}-----tel: {args[1]}')            
+            case "show":
+                if len(args)==1:
+                    show_phone(contact_name=args[0])
+            case "all":
+                show_all()
+            case "close":
+                print("\nGood bye!\n")
+                break
+            case "exit":
+                print("\nGood bye!\n")
+                break
+
+  
+
+        
+if __name__ == "__main__":
+    main()

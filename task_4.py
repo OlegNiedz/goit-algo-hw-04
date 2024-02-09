@@ -107,7 +107,7 @@ def main():
                 else: print(f"Contact not changed!")            
             
             case "show": 
-                show_phone(contact_name=question("Enter Name: ", tuple(contacts_dict.keys()), "Contact Name not fouded!"))
+                show_phone(contact_name=question("Enter Name: ", tuple(contacts_dict.keys()), "Contact Name not founded!"))
             
             case "all": show_all()
             
