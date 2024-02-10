@@ -1,0 +1,6 @@
+.vscode/
+laborator/Include/
+laborator/Lib/
+laborator/Scripts/
+laborator/requirements
+pyvenv.cfg

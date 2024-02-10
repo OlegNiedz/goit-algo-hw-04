@@ -13,12 +13,13 @@ Contacts_path = r"source/contacts.txt"
 old_dict = {}
 contacts_dict = {}
 
-def question(ask:str, args=(), error_answer=""):
+def promt(msg_promt:str, args=(), msg_err="",ignore_caps=False):
     while True:
-        answer=input(ask)
+        answer=input(msg_promt)
+        if ignore_caps: answer=answer.lower()
         if answer and not args or answer in args:
             break
-        else: print(error_answer)
+        else: print(msg_err)
     return answer
 
 def read_from_file(path:str,dic:dict):
@@ -44,11 +45,6 @@ def save_to_file(path:str):
             return False
     return True
 
-def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
-
 def add_contact(contact_name:str, contact_phone:str) -> bool:
     if contact_name in contacts_dict:
         return "",""
@@ -59,7 +55,7 @@ def add_contact(contact_name:str, contact_phone:str) -> bool:
         return contact_name, contact_phone
 
 def change_contact(contact_name:str, contact_phone:str):
-    if contact_name in contacts_dict and question(f"Change from {contacts_dict[contact_name]} to {contact_phone} Continue? Y/N: ",
+    if contact_name in contacts_dict and promt(f"Change from {contacts_dict[contact_name]} to {contact_phone} Continue? Y/N: ",
                                                   ('Y','y','N','n'),"Enter Y or N").upper()=='Y':
         contacts_dict[contact_name]=contact_phone.strip()
         return contact_name, contact_phone
@@ -68,7 +64,7 @@ def change_contact(contact_name:str, contact_phone:str):
 
 def show_phone(contact_name:str):
     if contact_name in contacts_dict:
-        print(f"{contact_name} {"-"*(50-len(contact_name))}tel: {contacts_dict[contact_name]}")
+        print(f"{contact_name:25}tel: {contacts_dict[contact_name]:10}")
         return True
     else:
         print("Record not founded!")
@@ -76,7 +72,7 @@ def show_phone(contact_name:str):
 
 def show_all():
     for name, phone in contacts_dict.items():
-        print(f"{name}{"-"*(50-len(name))}tel: {phone}")
+        print(f"{name:25}tel: {phone:10}")
 
 def main():
     print("\nWelcome to the assistant bot!\n\n        COMMANDS:")
@@ -86,42 +82,37 @@ def main():
     if activ: old_dict=contacts_dict.copy()
     
     while activ:
-        command = question("Enter command:", tuple(comands.keys()),"Unknown command!")
+        command = promt("Enter command:", tuple(comands.keys()),"Unknown command!",True)
         match command:            
             case "hello": print("\nHow can I help you?\n")
             
             case "add":
-                name, phone = add_contact(contact_name=question(ask="Enter Name: "),
-                               contact_phone=question(ask="Enter Phone: "))
+                name, phone = add_contact(contact_name=promt(msg_promt="Enter Name: "),
+                               contact_phone=promt(msg_promt="Enter Phone: "))
                 if name and phone:
                     print(f'Contact added: (Name: {name}-----tel: {phone})')
                 else: print(f"Contact not added!")
             
             case "change":
-                name, phone = change_contact(contact_name=question("Enter Name: ", 
+                name, phone = change_contact(contact_name=promt("Enter Name: ", 
                                                                    tuple(contacts_dict.keys()),
                                                                    "Name incorrect!"),
-                                             contact_phone=question(ask="Change Phone: "))
+                                             contact_phone=promt(msg_promt="Change Phone: "))
                 if phone:
                     print(f'Phone changed: {name}-----tel: {phone}')
                 else: print(f"Contact not changed!")            
             
             case "show": 
-                show_phone(contact_name=question("Enter Name: ", tuple(contacts_dict.keys()), "Contact Name not founded!"))
+                show_phone(contact_name=promt("Enter Name: ", tuple(contacts_dict.keys()), "Contact Name not fouded!"))
             
             case "all": show_all()
             
-            case "close":            
-                if contacts_dict!=old_dict and question("Save to file? (save: Y/N: ",('Y','y','N','n'),"Enter Y or N").upper()=="Y":
+            case "close" | "exit":            
+                if contacts_dict!=old_dict and promt("Save to file? (save: Y/N: ",('Y','y','N','n'),"Enter Y or N").upper()=="Y":
                     if save_to_file(Contacts_path): old_dict=contacts_dict.copy()
                 print("\nGood bye!\n")
                 break
-            
-            case "exit":
-                if contacts_dict!=old_dict and question("Save to file? (save: Y/N: ", ('Y','y','N','n'),"Enter Y or N").upper()=="Y":
-                    if save_to_file(Contacts_path): old_dict=contacts_dict.copy()       
-                print("\nGood bye!\n")
-                break
+
             
             case _: print("Unknown command!\n")
        
